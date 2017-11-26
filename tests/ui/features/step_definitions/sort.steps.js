@@ -1,11 +1,9 @@
 const {Given, Then, When} = require('cucumber');
 const assert = require('assert');
 
-let ligne;
-let newLigne;
-let contact;
+let lastNamesSorted = [];
 
-Given (/^The contact list is display$/, function (callback) {
+Given (/^The list is display$/, function (callback) {
     this.browser.visit("http://127.0.0.1:3000/", (err)=> {
         if (err) throw err;
 
@@ -37,28 +35,27 @@ Given (/^The contact list is display$/, function (callback) {
 
 });
 
+When (/^User clicks on sort button$/, function (callback) {
+    this.browser.visit("http://127.0.0.1:3000/", (err)=> {
+        if (err) throw err;
 
-When (/^User clicks on remove button of the first contact$/, function (callback) {
+        let lastNames = this.browser.querySelectorAll('td#cellLastName');
 
-    let c = this.browser.tabs.current.Contact;
-    var iterateur = c.Contacts.instance().iterator();
-    contact = iterateur.next();
-    // var ligne = $('tr').eq(1).children('td');
-    ligne = this.browser.querySelectorAll('tr')[1].querySelectorAll('td');
-    this.browser.querySelectorAll('tr')[1].querySelectorAll('td')[5].querySelector('a').click();
-    // $('div#contacts tr:nth-child(2) td:nth-child(6) a').click();
-    // var newLigne = $('tr').eq(1).children('td');
-    newLigne = this.browser.querySelectorAll('tr')[1].querySelectorAll('td');
-    callback();
+        for(let i=0; i<lastNames.length; i++){
+            lastNamesSorted.push(lastNames[i].innerHTML);
+        }
+        lastNamesSorted.sort();
+
+        this.browser.querySelector('#button_sort').click();
+        callback();
+    });
 });
 
-Then (/^The first contact is removed$/, function (callback) {
-    // on verifie que la premiere ligne est différente de celle supprimer
-    for(var i=0; i < ligne.length; i++){
-        assert.ok(ligne[i] != newLigne[i]);
-    }
+Then (/^The contact list is sorted$/, function (callback) {
+    let lastNames = this.browser.querySelectorAll('td#cellLastName');
 
-    assert.ok(contact.firstName() != newLigne[0]);
-    assert.ok(contact.lastName() != newLigne[1]);
+    for(var i=0; i < lastNames.length; i++){
+        assert.ok(lastNames[i].innerHTML === lastNamesSorted[i]);
+    }
     callback();
 });
